@@ -7,7 +7,6 @@ import android.widget.Button;
 import android.support.v7.widget.GridLayoutManager;
 import android.widget.Toast;
 
-import app.com.parkingdemo.*;
 
 public class MainActivity extends AppCompatActivity {
 
