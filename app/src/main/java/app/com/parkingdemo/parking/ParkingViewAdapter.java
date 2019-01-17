@@ -1,20 +1,25 @@
-package app.com.parkingdemo;
+package app.com.parkingdemo.parking;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
+
+import app.com.parkingdemo.R;
 
 public class ParkingViewAdapter extends RecyclerView.Adapter<ParkingViewAdapter.SimpleViewHolder> {
     OnParkingSoltClicked onParkingSoltClicked;
 static class SimpleViewHolder extends RecyclerView.ViewHolder implements RecyclerView.OnItemTouchListener {
  
     private ImageView imgView;
+    private TextView txtViewParkingNumber;
 
     SimpleViewHolder(View itemView) {
         super(itemView);
         imgView = itemView.findViewById(R.id.imageView);
+        txtViewParkingNumber=itemView.findViewById(R.id.txt_view_parking_number);
     }
 
     @Override
@@ -46,11 +51,12 @@ public ParkingViewAdapter(OnParkingSoltClicked onParkingSoltClicked){
     @Override
     public void onBindViewHolder(SimpleViewHolder rawHolder, final int position) {
         final SimpleViewHolder holder = rawHolder;
+        holder.txtViewParkingNumber.setText(position+1+"");
         holder.imgView.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view) {
-                onParkingSoltClicked.onPrkingItemClicked(position+1);
+                onParkingSoltClicked.onPrkingItemClicked(holder.txtViewParkingNumber.getText().toString());
             }
         });
     }
@@ -61,6 +67,6 @@ public ParkingViewAdapter(OnParkingSoltClicked onParkingSoltClicked){
 
 
     public interface OnParkingSoltClicked{
-     void onPrkingItemClicked(int position);
+     void onPrkingItemClicked(String position);
     }
 }
