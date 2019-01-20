@@ -1,5 +1,8 @@
 package app.com.parkingdemo.login;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -12,6 +15,7 @@ import app.com.parkingdemo.R;
 import app.com.parkingdemo.database.DBHelper;
 import app.com.parkingdemo.parking.MainActivity;
 import app.com.parkingdemo.registeration.RegistrationActivity;
+import app.com.parkingdemo.utils.AppConstants;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -19,12 +23,20 @@ public class LoginActivity extends AppCompatActivity {
     Button btnLogin;
     EditText etEmail,etPassword;
     DBHelper dbHelper;
+    SharedPreferences sharedPref;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+        sharedPref =PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         dbHelper=new DBHelper(this);
+        if(sharedPref.getInt(AppConstants.DATABASE_SETUP_KEY,0)==0){
+            for(int i=1;i<=10;i++){
+                dbHelper.insertParking(i+"");
+            }
+            sharedPref.edit().putInt(AppConstants.DATABASE_SETUP_KEY, 1).commit();
+        }
         initView();
         setListener();
     }
@@ -36,7 +48,9 @@ public class LoginActivity extends AppCompatActivity {
          if(!TextUtils.isEmpty(etEmail.getText()) && !TextUtils.isEmpty(etPassword.getText())){
              boolean isValidLogin=dbHelper.checkLogin(etEmail.getText().toString(),etPassword.getText().toString());
              if(isValidLogin){
+                 sharedPref.edit().putString(AppConstants.LOGGEDIN_USER_ID, dbHelper.getUserId(etEmail.getText().toString())).commit();
                  startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                 finish();
              } else{
                  Toast.makeText(LoginActivity.this,"Invalid User",Toast.LENGTH_SHORT).show();
              }

@@ -7,10 +7,17 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+
 import app.com.parkingdemo.R;
+import app.com.parkingdemo.database.ParkingTable;
 
 public class ParkingViewAdapter extends RecyclerView.Adapter<ParkingViewAdapter.SimpleViewHolder> {
     OnParkingSoltClicked onParkingSoltClicked;
+
+    ArrayList<ParkingTable> parkingTables;
+
+
 static class SimpleViewHolder extends RecyclerView.ViewHolder implements RecyclerView.OnItemTouchListener {
  
     private ImageView imgView;
@@ -38,8 +45,9 @@ static class SimpleViewHolder extends RecyclerView.ViewHolder implements Recycle
 }
 
 
-public ParkingViewAdapter(OnParkingSoltClicked onParkingSoltClicked){
+public ParkingViewAdapter(ArrayList<ParkingTable> parkingTables,OnParkingSoltClicked onParkingSoltClicked){
     this.onParkingSoltClicked=onParkingSoltClicked;
+    this.parkingTables=parkingTables;
 }
 
 
@@ -52,21 +60,28 @@ public ParkingViewAdapter(OnParkingSoltClicked onParkingSoltClicked){
     public void onBindViewHolder(SimpleViewHolder rawHolder, final int position) {
         final SimpleViewHolder holder = rawHolder;
         holder.txtViewParkingNumber.setText(position+1+"");
+
+        if(parkingTables.get(position).getParkingStatus().equals("yes")){
+            holder.imgView.setSelected(true);
+        }else {
+            holder.imgView.setSelected(false);
+        }
+
         holder.imgView.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view) {
-                onParkingSoltClicked.onPrkingItemClicked(holder.txtViewParkingNumber.getText().toString());
+                onParkingSoltClicked.onPrkingItemClicked(parkingTables.get(position));
             }
         });
     }
     @Override
     public int getItemCount() {
-        return 50;
+        return parkingTables.size();
     }
 
 
     public interface OnParkingSoltClicked{
-     void onPrkingItemClicked(String position);
+     void onPrkingItemClicked(ParkingTable parkingTable);
     }
 }

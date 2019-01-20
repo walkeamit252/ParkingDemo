@@ -8,4 +8,12 @@
     <color name="parking_book">#D50000</color>
     <color name="parking_available">#004D40</color>
 
+    <color name="white">#ffffff</color>
+
+    <color name="color_header">#1b2133</color>
+
+    <color name="red">#E4002B</color>
+
+    <color name="black">#101010</color>
+
 </resources>

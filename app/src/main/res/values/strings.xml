@@ -1,3 +1,15 @@
 <resources>
     <string name="app_name">ParkingDemo</string>
+
+
+    <string name="please_enter_valid_email">Please enter valid email.</string>
+    <string name="please_enter_valid_password">Please enter valid password.</string>
+    <string name="login_success">Login Success.</string>
+    <string name="login_failure">Login Failure.</string>
+
+    <string name="parking_table_set">parking</string>
+
+    <string name="alert_title">Alert</string>
+    <string name="btn_ok">Ok</string>
+
 </resources>

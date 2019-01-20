@@ -1,59 +1,79 @@
 package app.com.parkingdemo.database;
-
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class DBHelper extends SQLiteOpenHelper {
    public static final String DATABASE_NAME = "MyParkingDb.db";
-   public static final String CONTACTS_TABLE_USER_NAME = "User";
-   public static final String CONTACTS_TABLE_USER_ID = "user_id";
-   public static final String CONTACTS_COLUMN_USER_EMAIL = "user_email";
-   public static final String CONTACTS_COLUMN_USER_PASSWORD = "user_password";
-
-   private static final String CREATE_TABLE = "create table " + CONTACTS_TABLE_USER_NAME + "(" + CONTACTS_TABLE_USER_ID
-           + " INTEGER PRIMARY KEY AUTOINCREMENT, " + CONTACTS_COLUMN_USER_EMAIL + " TEXT NOT NULL, " + CONTACTS_COLUMN_USER_PASSWORD + " TEXT);";
+   static final int DB_VERSION = 1;
 
    public DBHelper(Context context) {
-      super(context, DATABASE_NAME , null, 1);
+      super(context, DATABASE_NAME , null, DB_VERSION);
    }
 
    @Override
    public void onCreate(SQLiteDatabase db) {
-      db.execSQL( CREATE_TABLE );
+      db.execSQL( User.CREATE_TABLE );
+      db.execSQL(ParkingTable.CREATE_TABLE);
+//      for(int i=1;i<=10;i++){
+//         insertParking(i+"");
+//      }
    }
 
    @Override
    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-      db.execSQL("DROP TABLE IF EXISTS CONTACTS_TABLE_NAME");
+      db.execSQL(User.DROP_USER_TABLE);
       onCreate(db);
    }
+
+
+   public boolean insertParking (String parkingId) {
+      SQLiteDatabase db = this.getWritableDatabase();
+      ContentValues contentValues = new ContentValues();
+      contentValues.put(ParkingTable.COLUMN_USER_ID, "");
+      contentValues.put(ParkingTable.COLUMN_PARKING_ISALLOCATED, "no");
+      db.insert(ParkingTable.TABLE_PARKING_NAME, null, contentValues);
+      db.close();
+      return true;
+   }
+
+
+
+   public int updateParkingStatus(String parkingId,String userId) {
+      SQLiteDatabase db = this.getWritableDatabase();
+      ContentValues values = new ContentValues();
+      values.put(ParkingTable.COLUMN_PARKING_ISALLOCATED, "yes");
+      values.put(ParkingTable.COLUMN_USER_ID,userId);
+      // updating row
+      return db.update(ParkingTable.TABLE_PARKING_NAME, values, ParkingTable.COLUMN_PARKING_ID + " = ?",
+              new String[]{String.valueOf(parkingId)});
+   }
+
 
    public boolean insertUser (String userEmail, String userPassword) {
       SQLiteDatabase db = this.getWritableDatabase();
       ContentValues contentValues = new ContentValues();
-      contentValues.put(CONTACTS_COLUMN_USER_EMAIL, userEmail);
-      contentValues.put(CONTACTS_COLUMN_USER_PASSWORD, userPassword);
-      db.insert(CONTACTS_TABLE_USER_NAME, null, contentValues);
+      contentValues.put(User.COLUMN_USER_EMAIL, userEmail);
+      contentValues.put(User.COLUMN_USER_PASSWORD, userPassword);
+      db.insert(User.TABLE_USER_NAME, null, contentValues);
+      db.close();
       return true;
    }
 
    public boolean checkLogin(String email,String password) {
       SQLiteDatabase db = this.getReadableDatabase();
-      Cursor cursor = db.query(CONTACTS_TABLE_USER_NAME, new String[] { CONTACTS_COLUMN_USER_EMAIL,
-                      CONTACTS_COLUMN_USER_PASSWORD }, CONTACTS_COLUMN_USER_EMAIL + "=?",
+      Cursor cursor = db.query(User.TABLE_USER_NAME, new String[] { User.COLUMN_USER_EMAIL,
+                      User.COLUMN_USER_PASSWORD }, User.COLUMN_USER_EMAIL + "=?",
               new String[] { email }, null, null, null, null);
       cursor.moveToFirst();
       if(cursor!=null && cursor.getCount()!=0)
       {
-         if(cursor.getString(cursor.getColumnIndex(CONTACTS_COLUMN_USER_EMAIL)).equals(email) &&
-                 cursor.getString(cursor.getColumnIndex(CONTACTS_COLUMN_USER_PASSWORD)).equals(password)){
+         if(cursor.getString(cursor.getColumnIndex(User.COLUMN_USER_EMAIL)).equals(email) &&
+                 cursor.getString(cursor.getColumnIndex(User.COLUMN_USER_PASSWORD)).equals(password)){
             return true;
          }else {
             return false;
@@ -62,19 +82,53 @@ public class DBHelper extends SQLiteOpenHelper {
    }
 
 
-   public ArrayList<String> getAllUser() {
-      ArrayList<String> array_list = new ArrayList<String>();
+   public String getUserId(String email){
       SQLiteDatabase db = this.getReadableDatabase();
-      Cursor cursor = db.query(CONTACTS_TABLE_USER_NAME, new String[] { CONTACTS_COLUMN_USER_EMAIL,
-                      CONTACTS_COLUMN_USER_PASSWORD }, null,
-              null, null, null, null, null);
+      Cursor cursor = db.query(User.TABLE_USER_NAME, new String[] { User.COLUMN_USER_ID,
+                      User.COLUMN_USER_EMAIL }, User.COLUMN_USER_EMAIL + "=?",
+              new String[] { email }, null, null, null, null);
       cursor.moveToFirst();
-      while(cursor.isAfterLast() == false){
-         array_list.add(cursor.getString(cursor.getColumnIndex(CONTACTS_TABLE_USER_ID)));
-         cursor.moveToNext();
+      if(cursor.getString(cursor.getColumnIndex(User.COLUMN_USER_EMAIL)).equals(email)){
+         return cursor.getString(cursor.getColumnIndex(User.COLUMN_USER_ID));
+      }else {
+         return null;
+      }
+   }
+
+
+   public ArrayList<String> getUserList() {
+      String selectQuery = "SELECT  * FROM " + User.TABLE_USER_NAME;
+
+      SQLiteDatabase db = this.getWritableDatabase();
+      Cursor cursor = db.rawQuery(selectQuery, null);
+      ArrayList<String> array_list = new ArrayList<String>();
+      // looping through all rows and adding to list
+      if (cursor.moveToFirst()) {
+         do {
+            array_list.add(cursor.getString(cursor.getColumnIndex(User.COLUMN_USER_EMAIL)));
+         } while (cursor.moveToNext());
       }
       return array_list;
    }
 
+
+   public ArrayList<ParkingTable> getParkingStatus() {
+      String selectQuery = "SELECT  * FROM " + ParkingTable.TABLE_PARKING_NAME;
+
+      SQLiteDatabase db = this.getWritableDatabase();
+      Cursor cursor = db.rawQuery(selectQuery, null);
+      ArrayList<ParkingTable> array_list = new ArrayList<ParkingTable>();
+      // looping through all rows and adding to list
+      if (cursor.moveToFirst()) {
+         do {
+            ParkingTable parkingTable=new ParkingTable();
+            parkingTable.setParkingId(cursor.getString(cursor.getColumnIndex(ParkingTable.COLUMN_PARKING_ID)));
+            parkingTable.setUserId(cursor.getString(cursor.getColumnIndex(ParkingTable.COLUMN_USER_ID)));
+            parkingTable.setParkingStatus(cursor.getString(cursor.getColumnIndex(ParkingTable.COLUMN_PARKING_ISALLOCATED)));
+            array_list.add(parkingTable);
+         } while (cursor.moveToNext());
+      }
+      return array_list;
+   }
 
 }
